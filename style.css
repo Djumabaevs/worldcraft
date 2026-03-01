@@ -281,13 +281,14 @@ select {
 
 /* === RESPONSIVE === */
 @media (max-width: 1024px) {
-  #main { flex-direction: column; }
-  #city-canvas { height: 50vh; }
-  .panel { width: 100%; border-radius: var(--radius) var(--radius) 0 0; }
+  body { overflow: auto; overflow-x: hidden; }
+  #main { flex-direction: column; height: 100vh; }
+  #city-canvas { flex: none; height: 45vh; min-height: 250px; width: 100%; }
+  .panel { width: 100%; flex: 1; border-radius: var(--radius) var(--radius) 0 0; min-height: 0; }
 }
 
 @media (max-width: 768px) {
-  #city-canvas { height: 38vh; }
+  #city-canvas { height: 40vh; min-height: 220px; }
   .panel { border-radius: 20px 20px 0 0; }
   #presets-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; }
   .preset-card { padding: 0.8rem 0.3rem; }
