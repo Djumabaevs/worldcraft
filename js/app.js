@@ -9,6 +9,8 @@ import UI from './ui.js';
 let currentScreen = 'loading';
 let cityInitialized = false;
 
+UI.setRefresh(() => refreshAll());
+
 function show(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   const el = document.getElementById(id);

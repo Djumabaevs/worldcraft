@@ -73,8 +73,11 @@ function showToast(message, icon = '✨', duration = 3000) {
   setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 400); }, duration);
 }
 
+let _refreshFn = null;
+
 const UI = {
   t, showToast,
+  setRefresh(fn) { _refreshFn = fn; },
 
   renderHUD(stats) {
     const hud = $('#hud');
@@ -124,6 +127,10 @@ const UI = {
       const banner = html('div', { class: 'all-done-banner', text: t('allDone') });
       list.appendChild(banner);
     }
+
+    // Add habit button
+    const addBtn = html('button', { class: 'btn btn-add', style: 'margin-top:12px', text: t('addHabit'), onclick: () => this.showAddHabitModal(_refreshFn) });
+    list.appendChild(addBtn);
   },
 
   renderStats() {
