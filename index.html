@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#6C5CE7">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>WorldCraft — Город привычек</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ONBOARDING -->
+  <div id="onboarding" class="screen">
+    <div class="onb-emoji">🏗️</div>
+    <div class="onb-title">WorldCraft</div>
+    <div class="onb-subtitle">Построй город своих привычек
+
+Каждая привычка — здание.
+Выполняешь — растёт.
+Пропускаешь — рушится.</div>
+    <button class="btn-start" id="onboarding-start">🏗️ Начать строить</button>
+  </div>
+
+  <!-- PICK HABITS -->
+  <div id="pick-habits" class="screen">
+    <div class="pick-title">С каких привычек начнём?</div>
+    <div class="pick-sub">Выбери минимум 2</div>
+    <div id="presets-grid"></div>
+    <button id="build-city-btn" disabled>Построить город →</button>
+  </div>
+
+  <!-- MAIN -->
+  <div id="main" class="screen">
+    <div id="city-canvas"></div>
+    <div class="panel">
+      <div id="hud"></div>
+      <div class="tab-bar">
+        <button class="tab-btn active" data-tab="today">📋 Сегодня</button>
+        <button class="tab-btn" data-tab="stats">📊 Стата</button>
+        <button class="tab-btn" data-tab="settings">⚙️</button>
+      </div>
+      <div class="panel-content">
+        <div id="tab-today" class="panel-tab active">
+          <div id="checklist"></div>
+        </div>
+        <div id="tab-stats" class="panel-tab">
+          <div id="stats-content"></div>
+        </div>
+        <div id="tab-settings" class="panel-tab">
+          <div id="settings-content"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
+    }
+  }
+  </script>
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
