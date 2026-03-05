@@ -149,13 +149,11 @@ const Habits = {
   },
 
   getStreakLevel(streak) {
-    if (streak >= 61) return 6;
-    if (streak >= 31) return 5;
-    if (streak >= 15) return 4;
-    if (streak >= 8) return 3;
-    if (streak >= 4) return 2;
-    if (streak >= 1) return 1;
-    return 0;
+    if (streak <= 0) return 0;
+    if (streak <= 2) return 1;
+    if (streak <= 4) return 2;
+    // Level 3+ grows every 3 days — buildings evolve continuously
+    return 3 + Math.floor((streak - 5) / 3);
   },
 
   getMissedDays(habit) {

@@ -131,16 +131,130 @@ function getFloorsForLevel(level) {
   return [0, 2, 4, 6, 9, 12, 16][level] || 0;
 }
 
+// Continuous floor growth based on streak — 1 new floor every day!
+function getFloorsForStreak(streak) {
+  if (streak <= 0) return 0;
+  // 2 floors at start, +1 per day, slows after 15
+  if (streak <= 15) return 1 + streak;
+  return Math.min(16 + Math.floor((streak - 15) / 2), 35);
+}
+
+// Procedural decorations around buildings that change every day
+function addStreakDecorations(g, streak) {
+  if (streak <= 0) return;
+  const seed = (n) => ((streak * 137 + n * 31) % 1000) / 1000;
+
+  // Benches (streak 2+, one per 3 days, up to 3)
+  const benchCount = Math.min(Math.floor((streak + 1) / 3), 3);
+  for (let i = 0; i < benchCount; i++) {
+    const bx = (i === 0 ? 1.1 : i === 1 ? -1.1 : 0);
+    const bz = (i < 2 ? seed(i) * 0.6 - 0.3 : 1.1);
+    const bench = box(0.22, 0.05, 0.08, 0x8B6914);
+    place(bench, bx, 0.025, bz);
+    g.add(bench);
+    const backrest = box(0.22, 0.06, 0.02, 0x6B4226);
+    place(backrest, bx, 0.07, bz - 0.04);
+    g.add(backrest);
+  }
+
+  // Street lamps (streak 3+, one per 4 days, up to 4)
+  const lampCount = Math.min(Math.floor(streak / 4), 4);
+  for (let i = 0; i < lampCount; i++) {
+    const lx = (i % 2 === 0 ? 1.3 : -1.3);
+    const lz = (i < 2 ? 0.4 : -0.4);
+    const pole = cyl(0.015, 0.55, 0x777777);
+    place(pole, lx, 0.275, lz);
+    g.add(pole);
+    const lampHead = sphere(0.035, 0xFFE8A0, {emissive: 0xFFE8A0, emissiveIntensity: 0.6});
+    place(lampHead, lx, 0.58, lz);
+    g.add(lampHead);
+  }
+
+  // Trees (streak 5+, one per 3 days, up to 6)
+  const treeCount = Math.min(Math.floor((streak - 3) / 3), 6);
+  for (let i = 0; i < treeCount; i++) {
+    const angle = (i / Math.max(treeCount, 1)) * Math.PI * 2 + seed(i + 100) * 0.5;
+    const dist = 1.4 + seed(i + 200) * 0.4;
+    const tx = Math.cos(angle) * dist;
+    const tz = Math.sin(angle) * dist;
+    const h = 0.25 + seed(i + 300) * 0.15;
+    const trunk = cyl(0.025, h, 0x8B6914);
+    place(trunk, tx, h * 0.5, tz);
+    g.add(trunk);
+    const foliage = sphere(0.1 + seed(i + 400) * 0.06, 0x27AE60);
+    place(foliage, tx, h + 0.08, tz);
+    g.add(foliage);
+  }
+
+  // Flower beds (streak 8+, one per 5 days, up to 4)
+  const flowerColors = [0xFF6B6B, 0xFDCB6E, 0xFD79A8, 0xA29BFE, 0x00CEC9];
+  const flowerCount = Math.min(Math.floor((streak - 6) / 5), 4);
+  for (let i = 0; i < flowerCount; i++) {
+    const fx = (seed(i + 500) - 0.5) * 2;
+    const fz = (i % 2 === 0 ? 1.2 : -1.2);
+    const bed = box(0.18, 0.03, 0.12, 0x6B4226);
+    place(bed, fx, 0.015, fz);
+    g.add(bed);
+    for (let j = 0; j < 3; j++) {
+      const flower = sphere(0.025, flowerColors[(i * 3 + j) % flowerColors.length]);
+      place(flower, fx + (j - 1) * 0.06, 0.05, fz);
+      g.add(flower);
+    }
+  }
+
+  // Flag (streak 12+)
+  if (streak >= 12) {
+    const flagPole = cyl(0.012, 0.7, 0x888888);
+    place(flagPole, 1.2, 0.35, -1.0);
+    g.add(flagPole);
+    const flag = box(0.14, 0.08, 0.01, 0xFF4444);
+    place(flag, 1.27, 0.66, -1.0);
+    g.add(flag);
+  }
+
+  // Small fountain (streak 20+)
+  if (streak >= 20) {
+    const fBase = cyl(0.18, 0.07, 0x999999);
+    place(fBase, 0, 0.035, -1.3);
+    g.add(fBase);
+    const fWater = cyl(0.14, 0.03, 0x74B9FF, {transparent: true, opacity: 0.6});
+    place(fWater, 0, 0.06, -1.3);
+    g.add(fWater);
+    const fSpout = cyl(0.02, 0.2, 0xBBBBBB);
+    place(fSpout, 0, 0.17, -1.3);
+    g.add(fSpout);
+    const fDrop = sphere(0.03, 0x74B9FF, {emissive: 0x74B9FF, emissiveIntensity: 0.4});
+    place(fDrop, 0, 0.3, -1.3);
+    g.add(fDrop);
+  }
+
+  // Parking lot (streak 30+)
+  if (streak >= 30) {
+    const lot = box(0.5, 0.02, 0.35, 0x555555);
+    place(lot, -1.3, 0.01, -0.8);
+    g.add(lot);
+    // car
+    const carBody = box(0.18, 0.08, 0.1, [0xE55039, 0x0984E3, 0xFDCB6E][streak % 3]);
+    place(carBody, -1.3, 0.06, -0.8);
+    g.add(carBody);
+    const carTop = box(0.1, 0.06, 0.08, carBody.material.color.getHex());
+    place(carTop, -1.28, 0.12, -0.8);
+    g.add(carTop);
+  }
+}
+
 // ======================== STANDARD BUILDING ========================
-function buildStandard(category, level, isNight) {
+function buildStandard(category, level, isNight, streak = 0) {
   const g = new THREE.Group();
   const c = CATEGORY_COLORS[category] || CATEGORY_COLORS.water;
-  const floors = getFloorsForLevel(level);
+  // Use streak for continuous floor growth when available
+  const floors = streak > 0 ? getFloorsForStreak(streak) : getFloorsForLevel(level);
   if (floors === 0) return buildRuins(c);
 
   const floorH = 0.45;
-  const w = 1.3 + level * 0.12;
-  const d = 1.3 + level * 0.12;
+  const cappedLevel = Math.min(level, 8);
+  const w = 1.3 + cappedLevel * 0.12;
+  const d = 1.3 + cappedLevel * 0.12;
   const baseY = addPlatform(g, w, d);
 
   // Build floors
@@ -153,7 +267,7 @@ function buildStandard(category, level, isNight) {
 
     // Windows on each floor > 0
     if (i > 0) {
-      const wCount = Math.min(2 + Math.floor(level/2), 3);
+      const wCount = Math.min(2 + Math.floor(cappedLevel/2), 4);
       addWindowsToFace(g, w/2, fy, 0, d, floorH, 'x+', wCount, isNight);
       addWindowsToFace(g, -w/2, fy, 0, d, floorH, 'x-', wCount, isNight);
       addWindowsToFace(g, 0, fy, d/2, w, floorH, 'z+', wCount, isNight);
@@ -803,15 +917,24 @@ const Buildings = {
 
   create(habit, isNight = false) {
     const level = Habits.getStreakLevel(habit.streak);
+    const streak = habit.streak;
     const missed = Habits.getMissedDays(habit);
 
     let group;
     const builder = categoryBuilders[habit.category];
-    if (builder && level > 0) {
-      group = builder(level, isNight);
+    if (level <= 0) {
+      // Ruins for broken streak
+      group = buildRuins(CATEGORY_COLORS[habit.category] || CATEGORY_COLORS.water);
+    } else if (builder && level <= 2) {
+      // Small themed buildings for early streaks (1-4 days)
+      group = builder(level, isNight, streak);
     } else {
-      group = buildStandard(habit.category, level, isNight);
+      // Standard growing buildings for level 3+ — grows every day!
+      group = buildStandard(habit.category, level, isNight, streak);
     }
+
+    // Add surrounding decorations based on streak (changes daily)
+    addStreakDecorations(group, streak);
 
     // Damage effects
     if (missed === 1 && level > 0) {

@@ -202,6 +202,7 @@ const UI = {
     const el = $('#settings-content');
     if (!el) return;
     const s = Storage.getSettings();
+    const lang = LANG();
 
     el.innerHTML = `
       <h2>${t('settings')}</h2>
@@ -216,6 +217,9 @@ const UI = {
       <div class="setting-row">
         <button class="btn btn-add" id="add-habit-btn">${t('addHabit')}</button>
       </div>
+      <div class="setting-row" style="margin-top:24px;border-top:1px solid rgba(0,0,0,0.1);padding-top:16px">
+        <button class="btn btn-danger" id="reset-btn" style="width:100%">🔄 ${lang === 'ru' ? 'Сбросить прогресс' : 'Reset Progress'}</button>
+      </div>
     `;
 
     $('#snd-toggle').onchange = (e) => {
@@ -229,6 +233,37 @@ const UI = {
       onUpdate();
     };
     $('#add-habit-btn').onclick = () => this.showAddHabitModal(onUpdate);
+    $('#reset-btn').onclick = () => this.showResetConfirm(onUpdate);
+  },
+
+  showResetConfirm(onDone) {
+    const lang = LANG();
+    const overlay = html('div', { class: 'modal-overlay active' });
+    const modal = html('div', { class: 'modal' });
+    modal.innerHTML = `
+      <div style="text-align:center;padding:8px 0">
+        <div style="font-size:48px;margin-bottom:12px">🏚️</div>
+        <h3 style="margin:0 0 8px">${lang === 'ru' ? 'Сбросить всё?' : 'Reset everything?'}</h3>
+        <p style="color:#666;margin:0 0 20px;font-size:14px">${lang === 'ru'
+          ? 'Все привычки, стрики и здания будут удалены. Город начнётся с нуля. Это действие нельзя отменить!'
+          : 'All habits, streaks and buildings will be deleted. Your city will start from scratch. This cannot be undone!'}</p>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-primary" id="reset-cancel">${t('cancel')}</button>
+        <button class="btn btn-danger" id="reset-confirm">${lang === 'ru' ? 'Да, сбросить' : 'Yes, reset'}</button>
+      </div>
+    `;
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+    overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
+    $('#reset-cancel', modal).onclick = () => overlay.remove();
+    $('#reset-confirm', modal).onclick = () => {
+      Storage.reset();
+      Storage.init();
+      overlay.remove();
+      // Reload the app to show onboarding
+      window.location.reload();
+    };
   },
 
   showAddHabitModal(onDone) {
